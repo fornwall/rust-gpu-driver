@@ -5,6 +5,7 @@ RUST_GPU_REVISION=8678d58d61a78f01201ec854cb5e3835c014fa3b
 : ${TARGET="x86_64-unknown-linux-gnu"}
 
 CHANNEL=nightly-2023-09-30
+STRIP=strip
 
 # Install nightly toolchain
 rustup uninstall $CHANNEL # To avoid old targets
@@ -27,8 +28,7 @@ cp -Rf $RUSTUP_TOOLCHAIN_PATH toolchain
 # rm -Rf toolchain/lib/rustlib
 rm -Rf toolchain/{etc,libexec,share}
 rm toolchain/bin/{rust-gdb,rust-gdbgui,rust-lldb,rustdoc}
-# strip --strip-unneeded toolchain/lib/*.so
-strip --strip-unneeded toolchain/bin/*
+$STRIP toolchain/bin/*
 cd ../../../
 
 # Build rust-gpu-compiler
@@ -50,6 +50,6 @@ cd $BUILD_DIR
 mkdir bin lib
 cp ../$TARGET/release/rust-gpu-compiler bin/
 cp ../$RUSTGPU_DIR/target/$TARGET/release/librustc_codegen_spirv.so lib/
-strip --strip-unneeded lib/librustc_codegen_spirv.so bin/rust-gpu-compiler
+$STRIP lib/librustc_codegen_spirv.so bin/rust-gpu-compiler
 zip ../../rust-gpu-compiler-$TARGET.zip -r .
 cd ../../
