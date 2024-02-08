@@ -59,19 +59,12 @@ strip = true
 #[test]
 fn test_split_input() {
     let bin_name = "binary-name".to_string();
-    let script_name = "main.rs".to_string();
-    let toolchain = None;
     macro_rules! si {
         ($i:expr) => {
             split_input(
                 &$i,
                 &$i.base_path(),
-                &[],
-                &[],
-                "/package",
                 &bin_name,
-                &script_name,
-                toolchain.clone(),
             )
             .ok()
         };
@@ -83,8 +76,8 @@ fn test_split_input() {
     };
 
     macro_rules! r {
-        ($m:expr, $p:expr, $r:expr) => {
-            Some(($m.into(), $p.into(), $r.into()))
+        ($m:expr, $p:expr) => {
+            Some(($m.into(), $p.into()))
         };
     }
 
@@ -106,8 +99,7 @@ name = "binary-name"
 version = "0.1.0""#,
                 STRIP_SECTION
             ),
-            "/dummy/main.rs",
-            None
+            "/dummy/main.rs"
         )
     );
 
@@ -129,8 +121,7 @@ name = "binary-name"
 version = "0.1.0""#,
                 STRIP_SECTION
             ),
-            "/dummy/main.rs",
-            None
+            "/dummy/main.rs"
         )
     );
 
@@ -153,8 +144,7 @@ name = "binary-name"
 version = "0.1.0""#,
                 STRIP_SECTION
             ),
-            "/dummy/main.rs",
-            None
+            "/dummy/main.rs"
         )
     );
 
@@ -162,12 +152,7 @@ version = "0.1.0""#,
         split_input(
             &f(r#"fn main() {}"#),
             &f(r#"fn main() {}"#).base_path(),
-            &[],
-            &[],
-            "",
             &bin_name,
-            "main.rs",
-            Some("stable".to_string())
         )
         .ok(),
         r!(
@@ -189,8 +174,7 @@ version = "0.1.0"
 toolchain = "stable""#,
                 STRIP_SECTION
             ),
-            "/dummy/main.rs",
-            None
+            "/dummy/main.rs"
         )
     );
 
@@ -216,8 +200,7 @@ name = "binary-name"
 version = "0.1.0""#,
                 STRIP_SECTION
             ),
-            "/dummy/main.rs",
-            None
+            "/dummy/main.rs"
         )
     );
 
@@ -243,8 +226,7 @@ name = "binary-name"
 version = "0.1.0""#,
                 STRIP_SECTION
             ),
-            "/dummy/main.rs",
-            None
+            "/dummy/main.rs"
         )
     );
 
@@ -270,8 +252,7 @@ name = "binary-name"
 version = "0.1.0""#,
                 STRIP_SECTION
             ),
-            "/dummy/main.rs",
-            None
+            "/dummy/main.rs"
         )
     );
 
@@ -298,8 +279,7 @@ name = "binary-name"
 version = "0.1.0""#,
                 STRIP_SECTION
             ),
-            "/dummy/main.rs",
-            None
+            "/dummy/main.rs"
         )
     );
 
@@ -332,8 +312,7 @@ name = "binary-name"
 version = "0.1.0""#,
                 STRIP_SECTION
             ),
-            "/dummy/main.rs",
-            None
+            "/dummy/main.rs"
         )
     );
 
@@ -355,16 +334,7 @@ name = "binary-name"
 version = "0.1.0""#,
                 STRIP_SECTION
             ),
-            "/package/main.rs",
-            Some(
-                r#"
-fn main() -> Result<(), Box<dyn std::error::Error+Sync+Send>> {
-    {println!("Hello")}
-    Ok(())
-}
-"#
-                .to_string()
-            )
+            "/package/main.rs"
         )
     );
 }
@@ -487,24 +457,18 @@ fn main() {
         fem("// cargo-deps: time=\"0.1.25\"
 fn main() {}
 "),
-        Some((
+        Some(
             DepList(" time=\"0.1.25\""),
-            "// cargo-deps: time=\"0.1.25\"
-fn main() {}
-"
-        ))
+        )
     );
 
     assert_eq!(
         fem("// cargo-deps: time=\"0.1.25\", libc=\"0.2.5\"
 fn main() {}
 "),
-        Some((
+        Some(
             DepList(" time=\"0.1.25\", libc=\"0.2.5\""),
-            "// cargo-deps: time=\"0.1.25\", libc=\"0.2.5\"
-fn main() {}
-"
-        ))
+        )
     );
 
     assert_eq!(
@@ -512,13 +476,9 @@ fn main() {}
   // cargo-deps: time=\"0.1.25\"  \n\
 fn main() {}
 "),
-        Some((
+        Some(
             DepList(" time=\"0.1.25\"  "),
-            "
-  // cargo-deps: time=\"0.1.25\"  \n\
-fn main() {}
-"
-        ))
+        )
     );
 
     assert_eq!(
@@ -543,20 +503,14 @@ fn main() {}
 //! ```
 fn main() {}
 "#),
-        Some((
+        Some(
             TomlOwned(
                 r#"[dependencies]
 time = "0.1.25"
 "#
                 .into()
             ),
-            r#"//! ```Cargo
-//! [dependencies]
-//! time = "0.1.25"
-//! ```
-fn main() {}
-"#
-        ))
+        )
     );
 
     assert_eq!(
@@ -578,22 +532,14 @@ time = "0.1.25"
 */
 fn main() {}
 "#),
-        Some((
+        Some(
             TomlOwned(
                 r#"[dependencies]
 time = "0.1.25"
 "#
                 .into()
             ),
-            r#"/*!
-```Cargo
-[dependencies]
-time = "0.1.25"
-```
-*/
-fn main() {}
-"#
-        ))
+        )
     );
 
     assert_eq!(
@@ -615,22 +561,14 @@ fn main() {}
  */
 fn main() {}
 "#),
-        Some((
+        Some(
             TomlOwned(
                 r#"[dependencies]
 time = "0.1.25"
 "#
                 .into()
             ),
-            r#"/*!
- * ```Cargo
- * [dependencies]
- * time = "0.1.25"
- * ```
- */
-fn main() {}
-"#
-        ))
+        )
     );
 }
 
