@@ -1,0 +1,47 @@
+[package]
+name = "rust-gpu-compiler"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+authors = ["Fredrik Fornwall <fredrik@fornwall.net>"]
+description = "Command-line tool to TODO"
+homepage = "https://rust-script.org"
+documentation = "https://github.com/fornwall/rust-gpu-compiler"
+repository = "https://github.com/fornwall/rust-gpu-compiler"
+readme = "README.md"
+license = "MIT/Apache-2.0"
+# keywords = ["TODO"]
+# categories = ["TODO"]
+
+exclude = [
+    "_config.yml",
+    "CNAME",
+    ".github",
+    "target"
+]
+
+[dependencies]
+clap = "4"
+dirs = "5"
+env_logger = "0.10"
+log = "0.4"
+pulldown-cmark = "0.9"
+regex = "1"
+sha1 = "0.10"
+shell-words = "1"
+tempfile = "3"
+toml = "0.8"
+
+[target.'cfg(unix)'.dependencies]
+is-terminal = "0.4.6"
+
+[dev-dependencies]
+lazy_static = "1"
+scan-rules = "0.2"
+
+[profile.release]
+lto = true
+
+[features]
+default=[]
+online_tests=[]

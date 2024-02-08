@@ -1,0 +1,137 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        rust: ["1.64.0", "stable"]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v3
+    - name: Setup rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: ${{ matrix.rust }}
+    - name: Run unit tests
+      run: rustc --version && cargo --version && cargo test --features online_tests
+    - name: Run script tests
+      if: runner.os != 'Windows'
+      run: |
+        # Run twice to test problem with expression caching
+        ./tests/scripts/test-runner.sh
+        ./tests/scripts/test-runner.sh
+
+  test-examples:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        rust: ["1.64.0", "stable"]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v3
+    - name: Setup rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: ${{ matrix.rust }}
+    - name: Setup homebrew
+      uses: Homebrew/actions/setup-homebrew@master
+    - name: Install hyperfine and just
+      run: brew install hyperfine just
+    - name: Install rust-script
+      run: cargo install --locked --path .
+    - name: Test examples
+      run: ./test-examples.sh
+      working-directory: examples
+
+  check-format:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v3
+    - name: Setup rust
+      uses: dtolnay/rust-toolchain@stable
+    - name: Install rustfmt
+      run: rustup component add rustfmt
+    - name: Check formatting with rustfmt
+      run: cargo fmt -- --check
+
+  check-clippy:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v3
+    - name: Setup rust
+      uses: dtolnay/rust-toolchain@stable
+    - name: Install rustfmt
+      run: rustup component add clippy
+    - name: Check for clippy warnings
+      run: cargo clippy --all-targets --all-features -- -D warnings -W clippy::cargo
+
+  upload-debug-builds:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v3
+    - name: Setup rust
+      uses: dtolnay/rust-toolchain@stable
+    - name: Build debug
+      run: cargo build
+    - name: Upload Windows debug build
+      if: runner.os == 'Windows'
+      uses: actions/upload-artifact@v3
+      with:
+        path: ./target/debug/rust-script.exe
+        name: windows-binary
+    - name: Upload macOS debug build
+      if: runner.os == 'macOS'
+      uses: actions/upload-artifact@v3
+      with:
+        path: ./target/debug/rust-script
+        name: mac-binary
+    - name: Upload Linux debug build
+      if: runner.os == 'Linux'
+      uses: actions/upload-artifact@v3
+      with:
+        path: ./target/debug/rust-script
+        name: linux-binary
+
+  test-install-file-association:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v3
+    - name: Setup rust
+      uses: dtolnay/rust-toolchain@stable
+    - name: Build debug
+      run: cargo build
+    - name: Install file association
+      run: ./target/debug/rust-script.exe --install-file-association
+    - name: Run example script
+      run: cmd.exe /C .\examples\hello.ers
+    - name: Uninstall file association
+      run: ./target/debug/rust-script.exe --uninstall-file-association
+    - name: Run example script
+      run: cmd.exe /C .\examples\hello.ers
+      continue-on-error: true
+
+  security-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/audit-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
