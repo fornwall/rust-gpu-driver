@@ -25,7 +25,6 @@ pub fn split_input(
 ) -> MainResult<(String, PathBuf)> {
     let (part_mani, source_path) = match input {
         Input::File(_, path, content) => {
-            let content = strip_shebang(content);
             let manifest = find_embedded_manifest(content).unwrap_or(Manifest::Toml(""));
 
             (manifest, path.clone())
@@ -373,17 +372,6 @@ fn main() -> Result<(), Box<dyn std::error::Error+Sync+Send>> {
             )
         )
     );
-}
-
-/**
-Returns a slice of the input string with the leading shebang, if there is one, omitted.
-*/
-fn strip_shebang(s: &str) -> &str {
-    let re_shebang: Regex = Regex::new(r"^#![^\[].*?(\r\n|\n)").unwrap();
-    match re_shebang.find(s) {
-        Some(m) => &s[m.end()..],
-        None => s,
-    }
 }
 
 /**
