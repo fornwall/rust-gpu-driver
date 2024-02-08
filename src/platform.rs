@@ -57,9 +57,9 @@ mod inner {
     use is_terminal::IsTerminal as _;
 
     /**
-    Returns `true` if `rust-script` should force Cargo to use coloured output.
+    Returns `true` if `rust-gpu` should force Cargo to use coloured output.
 
-    This depends on whether `rust-script`'s STDERR is connected to a TTY or not.
+    This depends on whether `rust-gpu`'s STDERR is connected to a TTY or not.
     */
     pub fn force_cargo_color() -> bool {
         std::io::stderr().is_terminal()
@@ -71,7 +71,7 @@ pub mod inner {
     pub use super::*;
 
     /**
-    Returns `true` if `rust-script` should force Cargo to use coloured output.
+    Returns `true` if `rust-gpu` should force Cargo to use coloured output.
 
     Always returns `false` on Windows because colour is communicated over a side-channel.
     */

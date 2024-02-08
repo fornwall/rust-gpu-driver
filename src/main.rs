@@ -44,7 +44,7 @@ fn try_main() -> MainResult<i32> {
     if args.clear_cache {
         clean_cache(0)?;
         if args.script.is_none() {
-            println!("rust-script cache cleared.");
+            println!("rust-gpu cache cleared.");
             return Ok(0);
         }
     }
@@ -69,14 +69,14 @@ fn try_main() -> MainResult<i32> {
     info!("input: {:?}", input);
 
     // Setup environment variables early so it's available at compilation time of scripts,
-    // to allow e.g. include!(concat!(env!("RUST_SCRIPT_BASE_PATH"), "/script-module.rs"));
+    // to allow e.g. include!(concat!(env!("RUST_GPU_BASE_PATH"), "/script-module.rs"));
     std::env::set_var(
-        "RUST_SCRIPT_PATH",
+        "RUST_GPU_PATH",
         input.path().unwrap_or_else(|| Path::new("")),
     );
-    std::env::set_var("RUST_SCRIPT_SAFE_NAME", input.safe_name());
-    std::env::set_var("RUST_SCRIPT_PKG_NAME", input.package_name());
-    std::env::set_var("RUST_SCRIPT_BASE_PATH", input.base_path());
+    std::env::set_var("RUST_GPU_SAFE_NAME", input.safe_name());
+    std::env::set_var("RUST_GPU_PKG_NAME", input.package_name());
+    std::env::set_var("RUST_GPU_BASE_PATH", input.base_path());
 
     let action = decide_action_for(&input, &args)?;
     info!("action: {:?}", action);
