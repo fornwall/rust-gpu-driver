@@ -26,8 +26,8 @@ cp -Rf $RUSTUP_TOOLCHAIN_PATH toolchain
 # rm -Rf toolchain/lib/rustlib
 rm -Rf toolchain/{etc,libexec,share}
 rm toolchain/bin/{rust-gdb,rust-gdbgui,rust-lldb,rustdoc}
-# llvm-strip --strip-unneeded toolchain/lib/*.so
-llvm-strip --strip-unneeded toolchain/bin/*
+# strip --strip-unneeded toolchain/lib/*.so
+strip --strip-unneeded toolchain/bin/*
 cd ../../../
 
 # Build rust-gpu-compiler
@@ -49,6 +49,6 @@ cd $BUILD_DIR
 mkdir bin lib
 cp ../$TARGET/release/rust-gpu-compiler bin/
 cp ../$RUSTGPU_DIR/target/$TARGET/release/librustc_codegen_spirv.so lib/
-llvm-strip --strip-unneeded lib/librustc_codegen_spirv.so bin/rust-gpu-compiler
+strip --strip-unneeded lib/librustc_codegen_spirv.so bin/rust-gpu-compiler
 zip ../../rust-gpu-compiler-$TARGET.zip -r .
 cd ../../
