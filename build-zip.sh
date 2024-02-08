@@ -7,6 +7,12 @@ RUST_GPU_REVISION=8678d58d61a78f01201ec854cb5e3835c014fa3b
 CHANNEL=nightly-2023-09-30
 STRIP=strip
 
+if [[ $TARGET = *apple* ]]; then
+    LIBRUSTC_CODEGEN_SPIRV=librustc_codegen_spirv.dylib
+else
+    LIBRUSTC_CODEGEN_SPIRV=librustc_codegen_spirv.so
+fi
+
 # Install nightly toolchain
 rustup uninstall $CHANNEL # To avoid old targets
 rustup install --profile minimal $CHANNEL
@@ -49,7 +55,7 @@ cd ../..
 cd $BUILD_DIR
 mkdir bin lib
 cp ../$TARGET/release/rust-gpu-compiler bin/
-cp ../$RUSTGPU_DIR/target/$TARGET/release/librustc_codegen_spirv.so lib/
-$STRIP lib/librustc_codegen_spirv.so bin/rust-gpu-compiler
+cp ../$RUSTGPU_DIR/target/$TARGET/release/$LIBRUSTC_CODEGEN_SPIRV lib/
+$STRIP lib/$LIBRUSTC_CODEGEN_SPIRV bin/rust-gpu-compiler
 zip ../../rust-gpu-compiler-$TARGET.zip -r .
 cd ../../
