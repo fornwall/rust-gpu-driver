@@ -9,7 +9,8 @@ CHANNEL=nightly-2023-09-30
 rustup uninstall $CHANNEL # To avoid old targets
 rustup install --profile minimal $CHANNEL
 # rustup install $CHANNEL
-rustup component add rust-src rustc-dev llvm-tools --toolchain $CHANNEL
+# rustup component add rust-src rustc-dev llvm-tools --toolchain $CHANNEL
+rustup component add rust-src --toolchain $CHANNEL
 RUSTUP_TOOLCHAIN_FOLDER=${CHANNEL}-${TARGET}
 RUSTUP_TOOLCHAIN_PATH=$HOME/.rustup/toolchains/$RUSTUP_TOOLCHAIN_FOLDER
 du -sh $RUSTUP_TOOLCHAIN_PATH
@@ -17,16 +18,16 @@ du -sh $RUSTUP_TOOLCHAIN_PATH
 # Bundle toolchain up before building (which bloats toolchain dir)
 BUILD_DIR=target/rust-gpu-compiler-distribution
 rm -Rf $BUILD_DIR
-mkdir -p $BUILD_DIR
-cd $BUILD_DIR
-cp -Rf $RUSTUP_TOOLCHAIN_PATH .
+mkdir -p $BUILD_DIR/share
+cd $BUILD_DIR/share
+cp -Rf $RUSTUP_TOOLCHAIN_PATH toolchain
 # Trim away not needed parts:
-# rm -Rf $RUSTUP_TOOLCHAIN_FOLDER/lib/rustlib
-rm -Rf $RUSTUP_TOOLCHAIN_FOLDER/{etc,libexec,share}
-rm $RUSTUP_TOOLCHAIN_FOLDER/bin/{rust-gdb,rust-gdbgui,rust-lldb,rustdoc}
-# llvm-strip --strip-unneeded $RUSTUP_TOOLCHAIN_FOLDER/lib/*.so
-llvm-strip --strip-unneeded $RUSTUP_TOOLCHAIN_FOLDER/bin/*
-cd ../../
+# rm -Rf toolchain/lib/rustlib
+rm -Rf toolchain/{etc,libexec,share}
+rm toolchain/bin/{rust-gdb,rust-gdbgui,rust-lldb,rustdoc}
+# llvm-strip --strip-unneeded toolchain/lib/*.so
+llvm-strip --strip-unneeded toolchain/bin/*
+cd ../../../
 
 # Build rust-gpu-compiler
 cargo build --release --target $TARGET
@@ -44,8 +45,9 @@ cd ../..
 
 # Bundle the rust-gpu-compiler binary and librustc_codegen_spirv.so and create zip
 cd $BUILD_DIR
-cp ../$TARGET/release/rust-gpu-compiler .
-cp ../$RUSTGPU_DIR/target/$TARGET/release/librustc_codegen_spirv.so .
-llvm-strip --strip-unneeded librustc_codegen_spirv.so rust-gpu-compiler
+mkdir bin lib
+cp ../$TARGET/release/rust-gpu-compiler bin/
+cp ../$RUSTGPU_DIR/target/$TARGET/release/librustc_codegen_spirv.so lib/
+llvm-strip --strip-unneeded lib/librustc_codegen_spirv.so bin/rust-gpu-compiler
 zip ../../rust-gpu-compiler.zip -r .
 cd ../../

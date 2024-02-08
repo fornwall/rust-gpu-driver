@@ -296,13 +296,21 @@ impl InputAction {
         }
 
         // TODO: Relative to current binary?
-        let toolchain_path =
-            "/home/fornwall/src/rust-gpu-compiler/tmp/nightly-2023-09-30-x86_64-unknown-linux-gnu";
-        let librustc_codegen_spirv_path =
-            "/home/fornwall/src/rust-gpu-compiler/tmp/librustc_codegen_spirv.so";
-        let rustc_path = "/home/fornwall/src/rust-gpu-compiler/tmp/nightly-2023-09-30-x86_64-unknown-linux-gnu/bin/rustc";
-
+        let mut current_exe_path_buf = std::env::current_exe().unwrap();
+        current_exe_path_buf.pop();
+        println!("current_exe_path_buf = {current_exe_path_buf:?}");
+        let current_exe_path = current_exe_path_buf.to_str().unwrap();
+        println!("OK");
+        let toolchain_path = format!("{current_exe_path}/../share/toolchain");
+            //"/home/fornwall/src/rust-gpu-compiler/tmp/nightly-2023-09-30-x86_64-unknown-linux-gnu";
+        let librustc_codegen_spirv_path = format!("{current_exe_path}/../lib/librustc_codegen_spirv.so");
+            //"/home/fornwall/src/rust-gpu-compiler/tmp/librustc_codegen_spirv.so";
+        let rustc_path = format!("{toolchain_path}/bin/rustc");
+            //"/home/fornwall/src/rust-gpu-compiler/tmp/nightly-2023-09-30-x86_64-unknown-linux-gnu/bin/rustc";
         let cargo_path = format!("{toolchain_path}/bin/cargo");
+        println!("librustc_codegen_spirv_path: {librustc_codegen_spirv_path}");
+        println!("RUSTC: {rustc_path}");
+        println!("CARGO: {cargo_path}");
         let mut cmd = Command::new(cargo_path);
 
         // cmd.arg(format!("+{}", consts::TOOLCHAIN_VERSION));
