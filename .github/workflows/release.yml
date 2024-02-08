@@ -6,51 +6,46 @@ on:
       - '[0-9]+.*'
 
 jobs:
-  create-release:
-    name: "Create GitHub release"
-    # only publish from the origin repository
-    if: github.repository_owner == 'fornwall'
+  build-and-upload-linux-brew-binaries:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: taiki-e/create-gh-release-action@v1
-        with:
-          changelog: CHANGELOG.md
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - uses: actions/checkout@v4
+    - run: TARGET=x86_64-unknown-linux-gnu ./build-zip.sh
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-x86_64-binary
+        path: rust-gpu-compiler-x86_64-unknown-linux-gnu.zip
 
-  crates:
-    runs-on: ubuntu-latest
+  build-and-upload-mac-brew-binaries:
+    runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: publish package to crates
-        run: |
-          cargo package
-          cargo publish --token ${{ secrets.CARGO_TOKEN }}
+    - uses: actions/checkout@v4
+    - uses: dtolnay/rust-toolchain@stable
+    - uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+    - run: rustup target add aarch64-apple-darwin
+    - run: TARGET=aarch64-apple-darwin ./build-zip.sh
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: mac-aarch64-binary
+        path: rust-gpu-compiler-aarch64-apple-darwin.zip
 
-  binaries:
-    name: "Upload release binaries"
-    needs:
-      - create-release
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - target: x86_64-unknown-linux-gnu
-            os: ubuntu-latest
-          - target: x86_64-apple-darwin
-            os: macos-latest
-          - target: aarch64-unknown-linux-gnu
-            os: ubuntu-latest
-          - target: aarch64-apple-darwin
-            os: macos-latest
-    runs-on: ${{ matrix.os }}
+  github-release:
+    needs: [build-and-upload-linux-brew-binaries, build-and-upload-mac-brew-binaries]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: taiki-e/upload-rust-binary-action@v1
+      - uses: actions/download-artifact@v4
         with:
-          bin: rust-script
-          target: ${{ matrix.target }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: mac-aarch64-binary
+      - uses: actions/download-artifact@v4
+        with:
+          name: linux-x86_64-binary
+      - uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            rust-gpu-compiler-aarch64-apple-darwin.zip
+            rust-gpu-compiler-x86_64-unknown-linux-gnu.zip

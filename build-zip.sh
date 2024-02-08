@@ -2,7 +2,8 @@
 set -e -u
 
 RUST_GPU_REVISION=8678d58d61a78f01201ec854cb5e3835c014fa3b
-TARGET=x86_64-unknown-linux-gnu
+: ${TARGET="x86_64-unknown-linux-gnu"}
+
 CHANNEL=nightly-2023-09-30
 
 # Install nightly toolchain
@@ -49,5 +50,5 @@ mkdir bin lib
 cp ../$TARGET/release/rust-gpu-compiler bin/
 cp ../$RUSTGPU_DIR/target/$TARGET/release/librustc_codegen_spirv.so lib/
 llvm-strip --strip-unneeded lib/librustc_codegen_spirv.so bin/rust-gpu-compiler
-zip ../../rust-gpu-compiler.zip -r .
+zip ../../rust-gpu-compiler-$TARGET.zip -r .
 cd ../../
