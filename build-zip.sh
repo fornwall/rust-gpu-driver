@@ -14,6 +14,7 @@ rustup install --profile minimal $CHANNEL
 rustup component add rust-src --toolchain $CHANNEL
 RUSTUP_TOOLCHAIN_FOLDER=${CHANNEL}-${TARGET}
 RUSTUP_TOOLCHAIN_PATH=$HOME/.rustup/toolchains/$RUSTUP_TOOLCHAIN_FOLDER
+ls -lha $HOME/.rustup/toolchains
 du -sh $RUSTUP_TOOLCHAIN_PATH
 
 # Bundle toolchain up before building (which bloats toolchain dir)
