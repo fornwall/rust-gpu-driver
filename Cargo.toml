@@ -14,8 +14,6 @@ license = "MIT/Apache-2.0"
 # categories = ["TODO"]
 
 exclude = [
-    "_config.yml",
-    "CNAME",
     ".github",
     "target"
 ]
