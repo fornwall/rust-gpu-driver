@@ -1,6 +1,3 @@
-/*!
-This module is concerned with how `rust-script` extracts the manfiest from a script file.
-*/
 use regex;
 
 use self::regex::Regex;
@@ -115,8 +112,7 @@ version = "0.1.0""#,
     );
 
     assert_eq!(
-        si!(f(r#"#!/usr/bin/env rust-script
-fn main() {}"#)),
+        si!(f(r#"fn main() {}"#)),
         r!(
             format!(
                 "{}{}",
@@ -342,8 +338,7 @@ version = "0.1.0""#,
     );
 
     assert_eq!(
-        si!(f(r#"#!/usr/bin/env rust-script
-println!("Hello")"#)),
+        si!(f(r#"println!("Hello")"#)),
         r!(
             format!(
                 "{}{}",
@@ -693,7 +688,7 @@ fn find_code_block_manifest(s: &str) -> Option<Manifest> {
         }
     };
 
-    scrape_markdown_manifest(&comment).map(|m| (Manifest::TomlOwned(m)))
+    scrape_markdown_manifest(&comment).map(Manifest::TomlOwned)
 }
 
 /**

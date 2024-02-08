@@ -189,13 +189,6 @@ struct InputAction {
     /// Always show cargo output?
     cargo_output: bool,
 
-    /**
-    Force Cargo to do a recompile, even if it thinks it doesn't have to.
-
-    `compile` must be `true` for this to have any effect.
-    */
-    force_compile: bool,
-
     /// Directory where the package should live.
     pkg_path: PathBuf,
 
@@ -256,42 +249,40 @@ impl InputAction {
             Ok(cmd)
         };
 
-        if !self.force_compile {
-            match fs::File::open(&built_binary_path) {
-                Ok(built_binary_file) => {
-                    // When possible, use creation time instead of modified time as cargo may copy
-                    // an already built binary (with old modified time):
-                    let built_binary_time = built_binary_file
-                        .metadata()?
-                        .created()
-                        .unwrap_or(built_binary_file.metadata()?.modified()?);
-                    match (
-                        fs::File::open(&self.script_path),
-                        fs::File::open(manifest_path),
-                    ) {
-                        (Ok(script_file), Ok(manifest_file)) => {
-                            let script_mtime = script_file.metadata()?.modified()?;
-                            let manifest_mtime = manifest_file.metadata()?.modified()?;
-                            if built_binary_time.cmp(&script_mtime).is_ge()
-                                && built_binary_time.cmp(&manifest_mtime).is_ge()
-                            {
-                                debug!("Keeping old binary");
-                                return execute_command();
-                            } else {
-                                debug!("Old binary too old - rebuilding");
-                            }
-                        }
-                        (Err(error), _) | (_, Err(error)) => {
-                            return Err(error::MainError::Io(error));
+        match fs::File::open(&built_binary_path) {
+            Ok(built_binary_file) => {
+                // When possible, use creation time instead of modified time as cargo may copy
+                // an already built binary (with old modified time):
+                let built_binary_time = built_binary_file
+                    .metadata()?
+                    .created()
+                    .unwrap_or(built_binary_file.metadata()?.modified()?);
+                match (
+                    fs::File::open(&self.script_path),
+                    fs::File::open(manifest_path),
+                ) {
+                    (Ok(script_file), Ok(manifest_file)) => {
+                        let script_mtime = script_file.metadata()?.modified()?;
+                        let manifest_mtime = manifest_file.metadata()?.modified()?;
+                        if built_binary_time.cmp(&script_mtime).is_ge()
+                            && built_binary_time.cmp(&manifest_mtime).is_ge()
+                        {
+                            debug!("Keeping old binary");
+                            return execute_command();
+                        } else {
+                            debug!("Old binary too old - rebuilding");
                         }
                     }
+                    (Err(error), _) | (_, Err(error)) => {
+                        return Err(error::MainError::Io(error));
+                    }
                 }
-                Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-                    debug!("No old binary found");
-                }
-                Err(e) => {
-                    return Err(error::MainError::Io(e));
-                }
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                debug!("No old binary found");
+            }
+            Err(e) => {
+                return Err(error::MainError::Io(e));
             }
         }
 
@@ -302,11 +293,12 @@ impl InputAction {
         let current_exe_path = current_exe_path_buf.to_str().unwrap();
         println!("OK");
         let toolchain_path = format!("{current_exe_path}/../share/toolchain");
-            //"/home/fornwall/src/rust-gpu-compiler/tmp/nightly-2023-09-30-x86_64-unknown-linux-gnu";
-        let librustc_codegen_spirv_path = format!("{current_exe_path}/../lib/librustc_codegen_spirv.so");
-            //"/home/fornwall/src/rust-gpu-compiler/tmp/librustc_codegen_spirv.so";
+        //"/home/fornwall/src/rust-gpu-compiler/tmp/nightly-2023-09-30-x86_64-unknown-linux-gnu";
+        let librustc_codegen_spirv_path =
+            format!("{current_exe_path}/../lib/librustc_codegen_spirv.so");
+        //"/home/fornwall/src/rust-gpu-compiler/tmp/librustc_codegen_spirv.so";
         let rustc_path = format!("{toolchain_path}/bin/rustc");
-            //"/home/fornwall/src/rust-gpu-compiler/tmp/nightly-2023-09-30-x86_64-unknown-linux-gnu/bin/rustc";
+        //"/home/fornwall/src/rust-gpu-compiler/tmp/nightly-2023-09-30-x86_64-unknown-linux-gnu/bin/rustc";
         let cargo_path = format!("{toolchain_path}/bin/cargo");
         println!("librustc_codegen_spirv_path: {librustc_codegen_spirv_path}");
         println!("RUSTC: {rustc_path}");
@@ -392,7 +384,6 @@ fn decide_action_for(input: &Input, args: &Args) -> MainResult<InputAction> {
 
     Ok(InputAction {
         cargo_output: args.cargo_output,
-        force_compile: args.force,
         pkg_path,
         script_path,
         using_cache,

@@ -10,7 +10,6 @@ pub struct Args {
     pub cargo_output: bool,
     pub clear_cache: bool,
     pub debug: bool,
-    pub force: bool,
 }
 
 impl Args {
@@ -32,8 +31,6 @@ impl Args {
                 .num_args(1..)
                 .trailing_var_arg(true)
             )
-
-            // Options that impact the script being executed.
             .arg(Arg::new("base-path")
                 .help("Base path for resolving dependencies")
                 .short('b')
@@ -52,19 +49,10 @@ impl Args {
                 .long("debug")
                 .action(ArgAction::SetTrue)
             )
-
-            // Options that change how rust-script itself behaves, and don't alter what the script will do.
             .arg(Arg::new("clear-cache")
                 .help("Clears out the script cache")
                 .long("clear-cache")
                 .action(ArgAction::SetTrue),
-            )
-            .arg(Arg::new("force")
-                .help("Force the script to be rebuilt")
-                .long("force")
-                .short('f')
-                .action(ArgAction::SetTrue)
-                .requires("shader")
             )
             .arg(Arg::new("gen_pkg_only")
                 .help("Generate the Cargo package and print the path to it, but don't compile or run it")
@@ -72,20 +60,14 @@ impl Args {
                 .short('p')
                 .action(ArgAction::SetTrue)
                 .requires("shader")
-                .conflicts_with_all(["debug", "force", "test"])
+                .conflicts_with_all(["debug"])
             )
             .arg(Arg::new("pkg_path")
                 .help("Specify where to place the generated Cargo package")
                 .long("pkg-path")
                 .num_args(1)
                 .requires("shader")
-                .conflicts_with_all(["clear-cache", "force"])
-            )
-            .arg(Arg::new("test")
-                .help("Compile and run tests")
-                .long("test")
-                .action(ArgAction::SetTrue)
-                .conflicts_with_all(["debug", "force"])
+                .conflicts_with_all(["clear-cache"])
             );
 
         let mut m = app.get_matches();
@@ -117,7 +99,6 @@ impl Args {
             cargo_output: m.get_flag("cargo-output"),
             clear_cache: m.get_flag("clear-cache"),
             debug: m.get_flag("debug"),
-            force: m.get_flag("force"),
         }
     }
 }
