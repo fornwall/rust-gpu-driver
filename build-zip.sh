@@ -5,7 +5,7 @@ RUST_GPU_REVISION=8678d58d61a78f01201ec854cb5e3835c014fa3b
 : ${TARGET="x86_64-unknown-linux-gnu"}
 
 CHANNEL=nightly-2023-09-30
-STRIP=strip
+STRIP=echo
 
 if [[ $TARGET = *apple* ]]; then
     LIBRUSTC_CODEGEN_SPIRV=librustc_codegen_spirv.dylib
