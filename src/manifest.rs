@@ -61,12 +61,7 @@ fn test_split_input() {
     let bin_name = "binary-name".to_string();
     macro_rules! si {
         ($i:expr) => {
-            split_input(
-                &$i,
-                &$i.base_path(),
-                &bin_name,
-            )
-            .ok()
+            split_input(&$i, &$i.base_path(), &bin_name).ok()
         };
     }
 
@@ -457,18 +452,14 @@ fn main() {
         fem("// cargo-deps: time=\"0.1.25\"
 fn main() {}
 "),
-        Some(
-            DepList(" time=\"0.1.25\""),
-        )
+        Some(DepList(" time=\"0.1.25\""),)
     );
 
     assert_eq!(
         fem("// cargo-deps: time=\"0.1.25\", libc=\"0.2.5\"
 fn main() {}
 "),
-        Some(
-            DepList(" time=\"0.1.25\", libc=\"0.2.5\""),
-        )
+        Some(DepList(" time=\"0.1.25\", libc=\"0.2.5\""),)
     );
 
     assert_eq!(
@@ -476,9 +467,7 @@ fn main() {}
   // cargo-deps: time=\"0.1.25\"  \n\
 fn main() {}
 "),
-        Some(
-            DepList(" time=\"0.1.25\"  "),
-        )
+        Some(DepList(" time=\"0.1.25\"  "),)
     );
 
     assert_eq!(
@@ -503,14 +492,12 @@ fn main() {}
 //! ```
 fn main() {}
 "#),
-        Some(
-            TomlOwned(
-                r#"[dependencies]
+        Some(TomlOwned(
+            r#"[dependencies]
 time = "0.1.25"
 "#
-                .into()
-            ),
-        )
+            .into()
+        ),)
     );
 
     assert_eq!(
@@ -532,14 +519,12 @@ time = "0.1.25"
 */
 fn main() {}
 "#),
-        Some(
-            TomlOwned(
-                r#"[dependencies]
+        Some(TomlOwned(
+            r#"[dependencies]
 time = "0.1.25"
 "#
-                .into()
-            ),
-        )
+            .into()
+        ),)
     );
 
     assert_eq!(
@@ -561,14 +546,12 @@ fn main() {}
  */
 fn main() {}
 "#),
-        Some(
-            TomlOwned(
-                r#"[dependencies]
+        Some(TomlOwned(
+            r#"[dependencies]
 time = "0.1.25"
 "#
-                .into()
-            ),
-        )
+            .into()
+        ),)
     );
 }
 
