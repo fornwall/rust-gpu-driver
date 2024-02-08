@@ -18,7 +18,7 @@ jobs:
         path: rust-gpu-compiler-x86_64-unknown-linux-gnu.zip
 
   build-and-upload-mac-brew-binaries:
-    runs-on: macos-latest
+    runs-on: macos-14
     steps:
     - uses: actions/checkout@v4
     - uses: dtolnay/rust-toolchain@stable
