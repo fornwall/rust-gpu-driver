@@ -1,14 +1,12 @@
 #![forbid(unsafe_code)]
 
 mod arguments;
+mod build;
 mod consts;
 mod defer;
 mod error;
 mod manifest;
 mod platform;
-
-#[cfg(unix)]
-use std::os::unix::process::CommandExt;
 
 use arguments::Args;
 use log::{debug, error, info};
@@ -95,17 +93,8 @@ fn try_main() -> MainResult<i32> {
         })
     };
 
-    let mut cmd = action.command_to_execute(&args.script_args)?;
-    #[cfg(unix)]
-    {
-        let err = cmd.exec();
-        Err(MainError::from(err))
-    }
-    #[cfg(not(unix))]
-    {
-        let exit_code = cmd.status().map(|st| st.code().unwrap_or(1))?;
-        Ok(exit_code)
-    }
+    action.execute_command();
+    Ok(0)
 }
 
 /**
@@ -208,12 +197,11 @@ struct InputAction {
     /// The package manifest contents.
     manifest: String,
 
-    // Name of the built binary
-    bin_name: String,
+    // Path of the built spir-v file
+    spirv_output_path: String,
 
-    // How the script was called originally
-    #[cfg(unix)]
-    original_script_path: Option<String>,
+    // The rust-gpu spir-v targert
+    target: String,
 }
 
 impl InputAction {
@@ -221,101 +209,27 @@ impl InputAction {
         self.pkg_path.join("Cargo.toml")
     }
 
-    fn command_to_execute(&self, script_args: &[String]) -> MainResult<Command> {
-        let release_mode = !self.debug;
-
-        let built_binary_path = platform::binary_cache_path()
-            .join(if release_mode { "release" } else { "debug" })
-            .join({
-                #[cfg(windows)]
-                {
-                    format!("{}.exe", &self.bin_name)
-                }
-                #[cfg(not(windows))]
-                {
-                    &self.bin_name
-                }
-            });
-
-        let manifest_path = self.manifest_path();
-
-        let execute_command = || {
-            let mut cmd = Command::new(&built_binary_path);
-            #[cfg(unix)]
-            if let Some(original_script_path) = &self.original_script_path {
-                cmd.arg0(original_script_path);
-            }
-            cmd.args(script_args.iter());
-            Ok(cmd)
-        };
-
-        match fs::File::open(&built_binary_path) {
-            Ok(built_binary_file) => {
-                // When possible, use creation time instead of modified time as cargo may copy
-                // an already built binary (with old modified time):
-                let built_binary_time = built_binary_file
-                    .metadata()?
-                    .created()
-                    .unwrap_or(built_binary_file.metadata()?.modified()?);
-                match (
-                    fs::File::open(&self.script_path),
-                    fs::File::open(manifest_path),
-                ) {
-                    (Ok(script_file), Ok(manifest_file)) => {
-                        let script_mtime = script_file.metadata()?.modified()?;
-                        let manifest_mtime = manifest_file.metadata()?.modified()?;
-                        if built_binary_time.cmp(&script_mtime).is_ge()
-                            && built_binary_time.cmp(&manifest_mtime).is_ge()
-                        {
-                            debug!("Keeping old binary");
-                            return execute_command();
-                        } else {
-                            debug!("Old binary too old - rebuilding");
-                        }
-                    }
-                    (Err(error), _) | (_, Err(error)) => {
-                        return Err(error::MainError::Io(error));
-                    }
-                }
-            }
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-                debug!("No old binary found");
-            }
-            Err(e) => {
-                return Err(error::MainError::Io(e));
-            }
-        }
-
-        // TODO: Relative to current binary?
+    fn execute_command(&self) {
         let mut current_exe_path_buf = std::env::current_exe().unwrap();
         current_exe_path_buf.pop();
-        println!("current_exe_path_buf = {current_exe_path_buf:?}");
         let current_exe_path = current_exe_path_buf.to_str().unwrap();
-        println!("OK");
         let toolchain_path = format!("{current_exe_path}/../share/toolchain");
-        //"/home/fornwall/src/rust-gpu-compiler/tmp/nightly-2023-09-30-x86_64-unknown-linux-gnu";
         let librustc_codegen_spirv_path =
             format!("{current_exe_path}/../lib/librustc_codegen_spirv.so");
-        //"/home/fornwall/src/rust-gpu-compiler/tmp/librustc_codegen_spirv.so";
         let rustc_path = format!("{toolchain_path}/bin/rustc");
-        //"/home/fornwall/src/rust-gpu-compiler/tmp/nightly-2023-09-30-x86_64-unknown-linux-gnu/bin/rustc";
         let cargo_path = format!("{toolchain_path}/bin/cargo");
-        println!("librustc_codegen_spirv_path: {librustc_codegen_spirv_path}");
-        println!("RUSTC: {rustc_path}");
-        println!("CARGO: {cargo_path}");
         let mut cmd = Command::new(cargo_path);
 
-        // cmd.arg(format!("+{}", consts::TOOLCHAIN_VERSION));
-
         cmd.arg("build");
+        cmd.arg("--message-format=json-render-diagnostics");
 
         // rust-gpu flags: https://embarkstudios.github.io/rust-gpu/book/writing-shader-crates.html
         // TODO: Default, but take optional from cmdline arg
-        let target = "spirv-unknown-spv1.3";
         cmd.arg("--target");
-        cmd.arg(target);
+        cmd.arg(&self.target);
         cmd.arg("-Zbuild-std=core");
         cmd.arg("-Zbuild-std-features=compiler-builtins-mem");
+        cmd.env_clear();
         cmd.env("RUSTC", rustc_path);
         cmd.env(
             "RUSTFLAGS",
@@ -324,7 +238,10 @@ impl InputAction {
         -Zbinary-dep-depinfo \
         -Csymbol-mangling-version=v0 \
         -Zcrate-attr=feature(register_tool) \
-        -Zcrate-attr=register_tool(rust_gpu)"
+        -Zcrate-attr=register_tool(rust_gpu) \
+        -Coverflow-checks=off \
+        -Cdebug-assertions=off \
+        -Zinline-mir=off"
             ),
         );
 
@@ -342,15 +259,29 @@ impl InputAction {
         cmd.arg("--target-dir");
         cmd.arg(cargo_target_dir);
 
-        if release_mode {
+        if !self.debug {
             cmd.arg("--release");
         }
 
-        if cmd.status()?.code() != Some(0) {
-            return Err(MainError::OtherOwned("Could not execute cargo".to_string()));
+        let build_output = cmd
+            .stderr(std::process::Stdio::inherit())
+            // .current_dir(&builder.path_to_crate)
+            .output()
+            .expect("Failed to execute cargo build");
+        if build_output.status.code() != Some(0) {
+            eprintln!("Could not execute cargo");
+            std::process::exit(1);
         }
-
-        Ok(cmd)
+        let stdout = String::from_utf8(build_output.stdout).unwrap();
+        let built_spirv_path = match build::parse_metadata_from_stdout(&stdout) {
+            Ok(metadata) => metadata,
+            Err(error) => {
+                eprintln!("--- build output ---\n{stdout}");
+                eprintln!("--- error ---\n{error:?}");
+                std::process::exit(1);
+            }
+        };
+        println!("{built_spirv_path:?}");
     }
 }
 
@@ -384,14 +315,13 @@ fn decide_action_for(input: &Input, args: &Args) -> MainResult<InputAction> {
 
     Ok(InputAction {
         cargo_output: args.cargo_output,
-        pkg_path,
-        script_path,
-        using_cache,
         debug: args.debug,
         manifest: mani_str,
-        bin_name,
-        #[cfg(unix)]
-        original_script_path: args.script.clone(),
+        pkg_path,
+        script_path,
+        spirv_output_path: bin_name,
+        target: args.target.clone(),
+        using_cache,
     })
 }
 
