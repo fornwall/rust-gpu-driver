@@ -28,14 +28,14 @@ du -sh $RUSTUP_TOOLCHAIN_PATH
 BUILD_DIR=target/rust-gpu-compiler-distribution
 rm -Rf $BUILD_DIR
 mkdir -p $BUILD_DIR/share
-cp shaders/example.rs $BUILD_DIR/share/
 cd $BUILD_DIR/share
-cp -Rf $RUSTUP_TOOLCHAIN_PATH toolchain
+cp -Rf $RUSTUP_TOOLCHAIN_PATH rust-gpu-toolchain
+cp ../../../shaders/example.rs rust-gpu-toolchain
 # Trim away not needed parts:
-# rm -Rf toolchain/lib/rustlib
-rm -Rf toolchain/{etc,libexec,share}
-rm toolchain/bin/{rust-gdb,rust-gdbgui,rust-lldb,rustdoc}
-$STRIP toolchain/bin/*
+# rm -Rf rust-gpu-toolchain/lib/rustlib
+rm -Rf rust-gpu-toolchain/{etc,libexec,share}
+rm rust-gpu-toolchain/bin/{rust-gdb,rust-gdbgui,rust-lldb,rustdoc}
+$STRIP rust-gpu-toolchain/bin/*
 cd ../../../
 
 # Build rust-gpu-compiler
