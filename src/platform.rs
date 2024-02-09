@@ -30,9 +30,16 @@ pub fn current_time() -> u128 {
 pub fn cache_dir() -> PathBuf {
     #[cfg(not(test))]
     {
+        let mut path_buf = std::env::current_exe().unwrap();
+        path_buf.pop();
+        path_buf.pop();
+        path_buf = path_buf.join("var").join("cache");
+        path_buf
+        /*
         dirs::cache_dir()
             .map(|dir| dir.join(crate::consts::PROGRAM_NAME))
             .expect("Cannot get cache directory")
+        */
     }
     #[cfg(test)]
     {
