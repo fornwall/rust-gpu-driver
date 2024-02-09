@@ -51,7 +51,7 @@ fn try_main() -> MainResult<i32> {
     let input = {
         let script = args.script.clone().unwrap();
         let (path, mut file) =
-            find_script(script.as_ref()).ok_or(format!("could not find script: {}", script))?;
+            find_script(script.as_ref()).ok_or(format!("cannot open input file: '{}'", script))?;
 
         let script_name = path
             .file_stem()
