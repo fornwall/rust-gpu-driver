@@ -40,5 +40,6 @@ jobs:
       - name: Download actionlint
         id: get_actionlint
         run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
-      - name: Check workflow files
-        run: ${{ steps.get_actionlint.outputs.executable }} -color
+        # Awaiting release of https://github.com/rhysd/actionlint/pull/392
+        # - name: Check workflow files
+        # run: ${{ steps.get_actionlint.outputs.executable }} -color
