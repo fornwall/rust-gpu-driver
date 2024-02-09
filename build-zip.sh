@@ -25,7 +25,7 @@ ls -lha $HOME/.rustup/toolchains
 du -sh $RUSTUP_TOOLCHAIN_PATH
 
 # Bundle toolchain up before building (which bloats toolchain dir)
-BUILD_DIR=target/rust-gpu-compiler-distribution
+BUILD_DIR=target/rust-gpu-driver-distribution
 rm -Rf $BUILD_DIR
 mkdir -p $BUILD_DIR/share
 cd $BUILD_DIR/share
@@ -58,5 +58,5 @@ mkdir bin lib
 cp ../$TARGET/release/rust-gpu-driver bin/rust-gpu
 cp ../$RUSTGPU_DIR/target/$TARGET/release/$LIBRUSTC_CODEGEN_SPIRV lib/
 $STRIP lib/$LIBRUSTC_CODEGEN_SPIRV bin/rust-gpu
-zip ../../rust-gpu-compiler-$TARGET.zip -r .
+zip ../../rust-gpu-driver-$TARGET.zip -r .
 cd ../../
