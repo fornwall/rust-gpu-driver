@@ -15,7 +15,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: linux-x86_64-binary
-        path: rust-gpu-compiler-x86_64-unknown-linux-gnu.zip
+        path: rust-gpu-driver-x86_64-unknown-linux-gnu.zip
 
   build-and-upload-mac-brew-binaries:
     runs-on: macos-14
@@ -31,7 +31,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: mac-aarch64-binary
-        path: rust-gpu-compiler-aarch64-apple-darwin.zip
+        path: rust-gpu-driver-aarch64-apple-darwin.zip
 
   github-release:
     needs: [build-and-upload-linux-brew-binaries, build-and-upload-mac-brew-binaries]
@@ -47,8 +47,8 @@ jobs:
       - uses: softprops/action-gh-release@v1
         with:
           files: |
-            rust-gpu-compiler-aarch64-apple-darwin.zip
-            rust-gpu-compiler-x86_64-unknown-linux-gnu.zip
+            rust-gpu-driver-aarch64-apple-darwin.zip
+            rust-gpu-driver-x86_64-unknown-linux-gnu.zip
 
   publish-homebrew:
     runs-on: ubuntu-latest
