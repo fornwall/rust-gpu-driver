@@ -33,7 +33,7 @@ pub fn cache_dir() -> PathBuf {
         let mut path_buf = std::env::current_exe().unwrap();
         path_buf.pop();
         path_buf.pop();
-        path_buf = path_buf.join("var").join("cache");
+        path_buf = path_buf.join("var").join("cache").join("rust-gpu");
         path_buf
         /*
         dirs::cache_dir()
