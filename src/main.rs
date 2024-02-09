@@ -238,6 +238,10 @@ impl InputAction {
         cmd.arg("-Zbuild-std=core");
         cmd.arg("-Zbuild-std-features=compiler-builtins-mem");
         cmd.env_clear();
+        if cfg!(target_vendor = "apple") {
+            // Otherwise 'cc' is not found when building proc macros for host:
+            cmd.env("PATH", "/usr/bin");
+        }
         cmd.env("RUSTC", rustc_path);
         cmd.env(
             "RUSTFLAGS",
