@@ -217,8 +217,13 @@ impl InputAction {
         current_exe_path_buf.pop();
         let current_exe_path = current_exe_path_buf.to_str().unwrap();
         let toolchain_path = format!("{current_exe_path}/../share/toolchain");
+        let lib_suffix = if cfg!(target_vendor = "apple") {
+            "dylib"
+        } else {
+            "so"
+        };
         let librustc_codegen_spirv_path =
-            format!("{current_exe_path}/../lib/librustc_codegen_spirv.so");
+            format!("{current_exe_path}/../lib/librustc_codegen_spirv.{lib_suffix}");
         let rustc_path = format!("{toolchain_path}/bin/rustc");
         let cargo_path = format!("{toolchain_path}/bin/cargo");
         let mut cmd = Command::new(cargo_path);
