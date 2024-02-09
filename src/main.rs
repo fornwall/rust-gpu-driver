@@ -216,7 +216,7 @@ impl InputAction {
         let mut current_exe_path_buf = std::env::current_exe().unwrap();
         current_exe_path_buf.pop();
         let current_exe_path = current_exe_path_buf.to_str().unwrap();
-        let toolchain_path = format!("{current_exe_path}/../share/toolchain");
+        let toolchain_path = format!("{current_exe_path}/../share/rust-gpu-toolchain");
         let lib_suffix = if cfg!(target_vendor = "apple") {
             "dylib"
         } else {
