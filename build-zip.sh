@@ -55,7 +55,7 @@ cd ../..
 # Bundle the rust-gpu-compiler binary and librustc_codegen_spirv.so and create zip
 cd $BUILD_DIR
 mkdir bin lib
-cp ../$TARGET/release/rust-gpu-compiler bin/rust-gpu
+cp ../$TARGET/release/rust-gpu-driver bin/rust-gpu
 cp ../$RUSTGPU_DIR/target/$TARGET/release/$LIBRUSTC_CODEGEN_SPIRV lib/
 $STRIP lib/$LIBRUSTC_CODEGEN_SPIRV bin/rust-gpu
 zip ../../rust-gpu-compiler-$TARGET.zip -r .
