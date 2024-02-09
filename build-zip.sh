@@ -28,6 +28,7 @@ du -sh $RUSTUP_TOOLCHAIN_PATH
 BUILD_DIR=target/rust-gpu-compiler-distribution
 rm -Rf $BUILD_DIR
 mkdir -p $BUILD_DIR/share
+cp shaders/example.rs $BUILD_DIR/share/
 cd $BUILD_DIR/share
 cp -Rf $RUSTUP_TOOLCHAIN_PATH toolchain
 # Trim away not needed parts:
