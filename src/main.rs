@@ -7,6 +7,7 @@ mod defer;
 mod error;
 mod manifest;
 mod platform;
+//mod rustproject;
 
 use arguments::Args;
 use log::{debug, error, info};
@@ -80,6 +81,11 @@ fn try_main() -> MainResult<i32> {
     info!("action: {:?}", action);
 
     generate_package(&action)?;
+
+    if args.gen_pkg_only {
+        println!("{}", action.pkg_path.to_str().unwrap());
+        return Ok(0);
+    }
 
     // Once we're done, clean out old packages from the cache.
     let _defer_clear = {
@@ -266,7 +272,6 @@ impl InputAction {
             .output()
             .expect("Failed to execute cargo build");
         if build_output.status.code() != Some(0) {
-            eprintln!("Could not execute cargo");
             std::process::exit(1);
         }
         let stdout = String::from_utf8(build_output.stdout).unwrap();
