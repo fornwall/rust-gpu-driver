@@ -11,7 +11,6 @@ Currently Linux x86-64 and macOS aarch64 binaries can be installed using [Homebr
 
 ```sh
 $ brew install fornwall/tap/rust-gpu
-[...]
 ```
 
 Windows users can use the Linux package through `WSL` for now.
