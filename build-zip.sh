@@ -1,10 +1,10 @@
 #!/bin/bash
 set -e -u
 
-RUST_GPU_REVISION=8678d58d61a78f01201ec854cb5e3835c014fa3b
+RUST_GPU_REVISION=$(cat src/rust-gpu-revision.txt)
 : ${TARGET="x86_64-unknown-linux-gnu"}
 
-CHANNEL=nightly-2023-09-30
+CHANNEL=$(cat src/nightly-channel.txt)
 STRIP=echo
 
 if [[ $TARGET = *apple* ]]; then

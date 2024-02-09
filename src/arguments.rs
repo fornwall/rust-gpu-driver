@@ -16,7 +16,11 @@ pub struct Args {
 impl Args {
     pub fn parse() -> Self {
         use clap::{Arg, Command};
-        let version = option_env!("CARGO_PKG_VERSION").unwrap_or("unknown");
+        let cli_version = option_env!("CARGO_PKG_VERSION").unwrap_or("unknown");
+        let rust_gpu_revision = include_str!("rust-gpu-revision.txt");
+        let version = format!(
+            "{cli_version} - https://github.com/EmbarkStudios/rust-gpu/commit/{rust_gpu_revision}"
+        );
         let about = r#"Compile rust-gpu shader files to spir-v"#;
 
         let app = Command::new(crate::consts::PROGRAM_NAME)
