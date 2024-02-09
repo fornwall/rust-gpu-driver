@@ -46,10 +46,6 @@ struct RustcOutput {
 
 #[derive(Debug)]
 pub enum SpirvBuilderError {
-    CratePathDoesntExist(PathBuf),
-    BuildFailed,
-    MultiModuleWithPrintMetadata,
-    WatchWithPrintMetadata,
     MetadataFileMissing(std::io::Error),
     MetadataFileMalformed(serde_json::Error),
 }

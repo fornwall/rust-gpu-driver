@@ -181,9 +181,6 @@ struct InputAction {
     /// Directory where the package should live.
     pkg_path: PathBuf,
 
-    /// Path of the source code that Cargo.toml refers.
-    script_path: PathBuf,
-
     /**
     Is the package directory in the cache?
 
@@ -281,7 +278,13 @@ impl InputAction {
                 std::process::exit(1);
             }
         };
-        println!("{built_spirv_path:?}");
+
+        if self.spirv_output_path == "-" {
+            let bytes = std::fs::read(built_spirv_path).unwrap();
+            std::io::stdout().write_all(&bytes).unwrap();
+        } else {
+            std::fs::copy(built_spirv_path, &self.spirv_output_path).unwrap();
+        }
     }
 }
 
@@ -311,15 +314,20 @@ fn decide_action_for(input: &Input, args: &Args) -> MainResult<InputAction> {
         None => input.base_path(),
     };
 
-    let (mani_str, script_path) = manifest::split_input(input, &base_path, &bin_name)?;
+    let (mani_str, _script_path) = manifest::split_input(input, &base_path, &bin_name)?;
+
+    let spirv_output_path = args.output_path.to_owned().unwrap_or_else(|| {
+        let mut path = PathBuf::from(args.script.clone().unwrap());
+        path.set_extension("spv");
+        path.to_str().unwrap().to_owned()
+    });
 
     Ok(InputAction {
         cargo_output: args.cargo_output,
         debug: args.debug,
         manifest: mani_str,
         pkg_path,
-        script_path,
-        spirv_output_path: bin_name,
+        spirv_output_path,
         target: args.target.clone(),
         using_cache,
     })

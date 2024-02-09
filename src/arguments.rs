@@ -4,6 +4,7 @@ use clap::{builder::PossibleValue, ArgAction};
 pub struct Args {
     pub base_path: Option<String>,
     pub cargo_output: bool,
+    pub output_path: Option<String>,
     pub clear_cache: bool,
     pub debug: bool,
     pub gen_pkg_only: bool,
@@ -60,6 +61,13 @@ impl Args {
                 .action(ArgAction::SetTrue)
                 .conflicts_with_all(["debug"])
             )
+            .arg(Arg::new("output")
+                .help("Write output to <output>. A file name of '-' represents standard output.")
+                .long("output")
+                .short('o')
+                .num_args(1)
+                .conflicts_with_all(["gen_pkg_only"])
+            )
             .arg(Arg::new("target")
                 .help("SPIR-V target")
                 .long("target")
@@ -86,7 +94,7 @@ impl Args {
                     PossibleValue::new("spirv-unknown-opengl4.5"),
                 ])
                 .default_value("spirv-unknown-vulkan1.1")
-                .conflicts_with_all(["clear-cache"])
+                .conflicts_with_all(["gen_pkg_only"])
             )
             .arg(Arg::new("pkg_path")
                 .help("Specify where to place the generated Cargo package")
@@ -96,7 +104,7 @@ impl Args {
                 .conflicts_with_all(["clear-cache"])
             );
 
-        let mut m = app.get_matches();
+        let m = app.get_matches();
 
         Self {
             script: m.get_one::<String>("shader").map(Into::into),
@@ -104,6 +112,7 @@ impl Args {
             pkg_path: m.get_one::<String>("pkg_path").map(Into::into),
             gen_pkg_only: m.get_flag("gen_pkg_only"),
             cargo_output: m.get_flag("cargo-output"),
+            output_path: m.get_one::<String>("output").map(Into::into),
             clear_cache: m.get_flag("clear-cache"),
             debug: m.get_flag("debug"),
             target: m.get_one::<String>("target").map(Into::into).unwrap(),
