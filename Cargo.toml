@@ -33,6 +33,12 @@ serde = "1"
 serde_json = "1"
 rustc_codegen_spirv-types = { git = "https://github.com/EmbarkStudios/rust-gpu" }
 
+# paths = { git = "https://github.com/rust-lang/rust-analyzer.git", tag = "2024-02-05" }
+# project-model = { git = "https://github.com/rust-lang/rust-analyzer.git", tag = "2024-02-05" }
+# base-db = { git = "https://github.com/rust-lang/rust-analyzer.git", tag = "2024-02-05" }
+# cfg = { git = "https://github.com/rust-lang/rust-analyzer.git", tag = "2024-02-05" }
+# vfs = { git = "https://github.com/rust-lang/rust-analyzer.git", tag = "2024-02-05" }
+
 [target.'cfg(unix)'.dependencies]
 is-terminal = "0.4.6"
 
