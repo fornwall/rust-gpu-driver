@@ -19,7 +19,7 @@ exclude = [
 ]
 
 [dependencies]
-clap = "4"
+clap = { version = "4", features = ["string"] }
 dirs = "5"
 env_logger = "0.10"
 log = "0.4"
