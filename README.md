@@ -1,6 +1,6 @@
-[![CI](https://github.com/fornwall/rust-gpu-compiler/workflows/CI/badge.svg)](https://github.com/fornwall/rust-gpu-compiler/actions?query=workflow%3ACI)
+[![CI](https://github.com/fornwall/rust-gpu-driver/workflows/CI/badge.svg)](https://github.com/fornwall/rust-gpu-driver/actions?query=workflow%3ACI)
 
-# rust-gpu-compiler
+# rust-gpu-driver
 Experiment to make [rust-gpu](https://github.com/EmbarkStudios/rust-gpu) more accessible as a GPU shading language in various projects.
 
 **DISCLAIMER**: This is an unstable experiment - use at your own risk and expect things not working and breaking over time.

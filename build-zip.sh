@@ -38,7 +38,6 @@ rm rust-gpu-toolchain/bin/{rust-gdb,rust-gdbgui,rust-lldb,rustdoc}
 $STRIP rust-gpu-toolchain/bin/*
 cd ../../../
 
-# Build rust-gpu-compiler
 cargo build --release --target $TARGET
 
 # Build rust
@@ -52,7 +51,7 @@ git reset --hard $RUST_GPU_REVISION
 cargo build --release -p rustc_codegen_spirv --target $TARGET
 cd ../..
 
-# Bundle the rust-gpu-compiler binary and librustc_codegen_spirv.so and create zip
+# Bundle the rust-gpu-driver binary and librustc_codegen_spirv.so and create zip
 cd $BUILD_DIR
 mkdir bin lib
 cp ../$TARGET/release/rust-gpu-driver bin/rust-gpu
