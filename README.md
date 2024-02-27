@@ -21,7 +21,6 @@ With a rust-gpu shader file `shader.rs` such as:
 
 ```rust
 #![no_std]
-
 use spirv_std::spirv;
 use spirv_std::glam::{vec4, Vec4};
 
